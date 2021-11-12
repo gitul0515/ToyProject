@@ -9,14 +9,30 @@ int opacity_var = -7;
 // 시간 초기화
 int reset_time = 0;
 
-// 스테이지와 정답
-int stage = 1;
-int answer;
-boolean answer_status = false; // true: 정답인 경우, false: 정답이 아닌 경우
+// 스테이지
+Stage[] stage = new Stage[3]; // 스테이지는 총 3개
+class Stage {
+  String question; // 문제 텍스트
+  String text1, text2, text3; // 보기 텍스트 1, 2, 3 
+  int answer; // 정답
 
-// 게임 오버 애니메이션
+  // 생성자 함수
+  Stage(String _question, String _text1, String _text2, String _text3, int _answer) {
+    question = _question;
+    text1 = _text1;
+    text2 = _text2;
+    text3 = _text3;
+    answer = _answer;
+  }
+}
+
+int cur_stage = 1; // 현재 스테이지
+boolean answer_status = false; // 정답 판정
+int wrong_status = 0; // 오답 판정
+
+// 애니메이션
 int i = 0;
-PImage[] img_gameover = new PImage[9];
+PImage[] img_gameover = new PImage[9]; // 게임 오버 애니메이션
 
 void setup() {
   // 화면 크기 (모니터 해상도)
@@ -26,6 +42,11 @@ void setup() {
   font1 = createFont("맑은 고딕", 24);
   font2 = createFont("맑은 고딕 Bold", 24);
   
+  // 스테이지
+  stage[0] = new Stage("\"사과\"를 영어로 뭐라고 할까요?", "Apple", "Banana", "Melon", 1);
+  stage[1] = new Stage("\"학교\"를 영어로 뭐라고 할까요?", "Swim", "Sport", "School", 3);
+  stage[2] = new Stage("\"생일\"을 영어로 뭐라고 할까요?", "Monday", "Holiday", "Birthday", 3);
+
   // 게임 오버 애니메이션
   img_gameover[0] = loadImage("gameover_1-0.png");
   img_gameover[1] = loadImage("gameover_1-1.png");
@@ -43,54 +64,48 @@ void draw() {
   background(242, 242, 242);
 
   // 시간(time)은 1초 단위로 차감된다.
-  int run_time = (millis() / 1000) - reset_time; // reset_time은 시간 초기화용 변수
-  int time = 30 - run_time;
+  int time = 10 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
   
   // 시간(30초)가 지나지 않은 경우
   if (time > 0) {
     // 첫 번째 스테이지
-    if (stage == 1) {
-      answer = 1; // 정답
+    if (cur_stage == 1) {
       if (answer_status == false) {
-        quiz(time, answer);
+        quiz(time, stage[0]);
       } else Answer();
     }
         
     // 두 번째 스테이지
-    if (stage == 2) {
-      answer = 3; // 정답
+    if (cur_stage == 2) {
       if (answer_status == false) {
-        quiz(time, answer);
+        quiz(time, stage[1]);
       } else Answer();
     } 
     
     // 세 번째 스테이지
-    if (stage == 3) {
-      answer = 2; // 정답
+    if (cur_stage == 3) {
       if (answer_status == false) {
-        quiz(time, answer);
+        quiz(time, stage[2]);
       } else Answer();
     }
     
     // 게임 클리어
-    if (stage > 3) {
+    if (cur_stage > 3) {
       
     }
   } else { // 시간(30초)가 지났다면, 게임 오버 화면을 출력한다
     gameOver();
   }
-  println(mouseX);
-  println(mouseY);
 }
 
 // 퀴즈 화면을 출력하는 함수
-void quiz(int time, int answer) {
+void quiz(int time, Stage stage) {
   // 문제 텍스트
   textFont(font2, 62);
   fill(51, 63, 80);
-  text("QUIZ", width / 2 - 70, height / 2 - 230);
+  text("QUIZ " + cur_stage, width / 2 - 80, height / 2 - 230);
   textFont(font1, 48);
-  text("사과를 영어로 뭐라고 하나요?", width / 2 - 300, height / 2 - 150);
+  text(stage.question, width / 2 - 300, height / 2 - 150);
   
   // 빨간색 원 도형
   stroke(255, 0, 0);
@@ -101,7 +116,7 @@ void quiz(int time, int answer) {
   // 빨간색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text("Apple", 280, 450);
+  text(stage.text1, 280, 450);
   
   // 초록색 원 도형
   stroke(0, 176, 80);
@@ -112,7 +127,7 @@ void quiz(int time, int answer) {
   // 초록색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text("Banana", 280 + 340, 450);
+  text(stage.text2, 280 + 340, 450);
   
   // 파란색 원 도형
   stroke(46, 117, 182);
@@ -123,18 +138,17 @@ void quiz(int time, int answer) {
   // 파란색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text("Melon", 280 + 700, 450);
+  text(stage.text3, 280 + 700, 450);
   
   // 남은 시간 표시
   textFont(font1, 30);
-  fill(51, 63, 80);
   text("남은 시간", 15, 50);
   textFont(font2, 30);
   text(time, 155, 50);
   
   // 레벨 표시
   textFont(font1, 30);
-  text("스테이지 1 / 3", width - 210, 50);
+  text("스테이지 " + cur_stage + "/ 3", width - 210, 50);
   
   // 하위 서브 텍스트
   textFont(font1, 34);
@@ -149,19 +163,16 @@ void quiz(int time, int answer) {
   
   // ============= 정답 및 오답 처리  =============
   // 정답이 1인 경우
-  if (answer == 1 && mousePressed && mouseY >= 305 && mouseY <= 575) {
+  if (stage.answer == 1 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     if (mouseX >= 205 && mouseX <= 475) { // 정답 처리
       answer_status = true;
     } else if (mouseX >= 555 && mouseX <= 825) { // 오답 처리
-      strokeWeight(10);
-      stroke(51, 63, 80);
-      line(605, 354, 775, 525);
-      line(775, 354, 605, 525);
+      wrong_status = 2;
     }
   }
   
   // 정답이 2인 경우
-  if (answer == 2 && mousePressed && mouseY >= 305 && mouseY <= 575) {
+  if (stage.answer == 2 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     // 정답 처리
     if (mouseX >= 555 && mouseX <= 825) {
       answer_status = true;
@@ -169,16 +180,22 @@ void quiz(int time, int answer) {
   }
   
   // 정답이 3인 경우
-  if (answer == 3 && mousePressed && mouseY >= 305 && mouseY <= 575) {
+  if (stage.answer == 3 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     // 정답 처리
     if (mouseX >= 905 && mouseX <= 1175) {
       answer_status = true;
     } 
   }
+  
+  if (wrong_status == 1) {
+  
+  }
 }
 
 // 정답 화면을 출력하는 함수
 void Answer() {
+  reset_time = 100; // 시간을 멈춘다
+  
   textFont(font2, 62);
   fill(51, 63, 80);
   text("정답입니다!", width / 2 - 150, height / 2 - 220);
@@ -209,7 +226,7 @@ void Answer() {
   
   if (keyPressed) {
     if (key == ' ') { // 스페이스 바를 누르면 다음 스테이지로 이동한다
-      stage++; // 스테이지 1 증가
+      cur_stage++; // 스테이지 1 증가
       answer_status = false;
       reset_time = millis() / 1000; // 시간 초기화
     }
