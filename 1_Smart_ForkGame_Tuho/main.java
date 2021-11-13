@@ -13,15 +13,15 @@ int reset_time = 0;
 Stage[] stage = new Stage[3]; // 스테이지는 총 3개
 class Stage {
   String question; // 문제 텍스트
-  String text1, text2, text3; // 보기 텍스트 1, 2, 3 
+  String text[] = new String[3]; // 보기 텍스트
   int answer; // 정답
 
   // 생성자 함수
-  Stage(String _question, String _text1, String _text2, String _text3, int _answer) {
+  Stage(String _question, String[] _text, int _answer) {
     question = _question;
-    text1 = _text1;
-    text2 = _text2;
-    text3 = _text3;
+    for (int i = 0; i < text.length; i++) {
+      text[i] = _text[i];
+    }
     answer = _answer;
   }
 }
@@ -43,9 +43,14 @@ void setup() {
   font2 = createFont("맑은 고딕 Bold", 24);
   
   // 스테이지
-  stage[0] = new Stage("\"사과\"를 영어로 뭐라고 할까요?", "Apple", "Banana", "Melon", 1);
-  stage[1] = new Stage("\"학교\"를 영어로 뭐라고 할까요?", "Swim", "Sport", "School", 3);
-  stage[2] = new Stage("\"생일\"을 영어로 뭐라고 할까요?", "Monday", "Holiday", "Birthday", 3);
+  String[] text_0 = { "Apple", "Banana", "Melon" };
+  stage[0] = new Stage("\"사과\"를 영어로 뭐라고 할까요?", text_0, 1);
+  
+  String[] text_1 = { "Swim", "Sport", "School" };
+  stage[1] = new Stage("\"학교\"를 영어로 뭐라고 할까요?", text_1, 3);
+  
+  String[] text_2 = { "Monday", "Holiday", "Birthday" };
+  stage[2] = new Stage("\"휴일\"을 영어로 뭐라고 할까요?", text_2, 2);
 
   // 게임 오버 애니메이션
   img_gameover[0] = loadImage("gameover_1-0.png");
@@ -64,29 +69,29 @@ void draw() {
   background(242, 242, 242);
 
   // 시간(time)은 1초 단위로 차감된다.
-  int time = 10 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
+  int time = 5 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
   
   // 시간(30초)가 지나지 않은 경우
   if (time > 0) {
     // 첫 번째 스테이지
     if (cur_stage == 1) {
       if (answer_status == false) {
-        quiz(time, stage[0]);
-      } else Answer();
+        quiz(time, stage[cur_stage - 1]);
+      } else Answer(stage[cur_stage - 1]);
     }
         
     // 두 번째 스테이지
     if (cur_stage == 2) {
       if (answer_status == false) {
-        quiz(time, stage[1]);
-      } else Answer();
+        quiz(time, stage[cur_stage - 1]);
+      } else Answer(stage[cur_stage - 1]);
     } 
     
     // 세 번째 스테이지
     if (cur_stage == 3) {
       if (answer_status == false) {
-        quiz(time, stage[2]);
-      } else Answer();
+        quiz(time, stage[cur_stage - 1]);
+      } else Answer(stage[cur_stage - 1]);
     }
     
     // 게임 클리어
@@ -100,12 +105,14 @@ void draw() {
 
 // 퀴즈 화면을 출력하는 함수
 void quiz(int time, Stage stage) {
+  textAlign(CENTER);
+  
   // 문제 텍스트
   textFont(font2, 62);
   fill(51, 63, 80);
-  text("QUIZ " + cur_stage, width / 2 - 80, height / 2 - 230);
+  text("QUIZ " + cur_stage, width / 2, height / 2 - 230);
   textFont(font1, 48);
-  text(stage.question, width / 2 - 300, height / 2 - 150);
+  text(stage.question, width / 2, height / 2 - 150);
   
   // 빨간색 원 도형
   stroke(255, 0, 0);
@@ -116,44 +123,44 @@ void quiz(int time, Stage stage) {
   // 빨간색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text(stage.text1, 280, 450);
+  text(stage.text[0], 340, 450);
   
   // 초록색 원 도형
   stroke(0, 176, 80);
   strokeWeight(8);
   fill(242, 242, 242);
-  ellipse(340 + 350, 440, 270, 270);
+  ellipse(width / 2, 440, 270, 270);
   
   // 초록색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text(stage.text2, 280 + 340, 450);
+  text(stage.text[1], width / 2, 450);
   
   // 파란색 원 도형
   stroke(46, 117, 182);
   strokeWeight(8);
   fill(242, 242, 242);
-  ellipse(340 + 700, 440, 270, 270);
+  ellipse(1026, 440, 270, 270);
   
   // 파란색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text(stage.text3, 280 + 700, 450);
+  text(stage.text[2], 1026, 450);
   
   // 남은 시간 표시
   textFont(font1, 30);
-  text("남은 시간", 15, 50);
+  text("남은 시간", 80, 50);
   textFont(font2, 30);
-  text(time, 155, 50);
+  text(time, 170, 50);
   
   // 레벨 표시
   textFont(font1, 30);
-  text("스테이지 " + cur_stage + "/ 3", width - 210, 50);
+  text("스테이지 " + cur_stage + "/ 3", width - 110, 50);
   
   // 하위 서브 텍스트
   textFont(font1, 34);
   fill(51, 63, 80, text_opacity);
-  text("공을 손으로 던져주세요!", width / 2 - 180, height / 2 + 285);
+  text("공을 손으로 던져주세요!", width / 2, height / 2 + 285);
 
   // 텍스트 투명도 조정
   text_opacity += opacity_var;
@@ -193,30 +200,34 @@ void quiz(int time, Stage stage) {
 }
 
 // 정답 화면을 출력하는 함수
-void Answer() {
+void Answer(Stage stage) {
   reset_time = 100; // 시간을 멈춘다
   
   textFont(font2, 62);
   fill(51, 63, 80);
-  text("정답입니다!", width / 2 - 150, height / 2 - 220);
+  text("정답입니다!", width / 2, height / 2 - 220);
+  
   
   // 정답 도형
-  stroke(255, 0, 0);
+  if (stage.answer == 1) stroke(255, 0, 0); // 빨간색
+  else if (stage.answer == 2) stroke(0, 176, 80); // 초록색
+  else stroke(46, 117, 182); // 파란색
+
   strokeWeight(8);
   fill(242, 242, 242);
   ellipse(width / 2, height / 2 + 10, 320, 320);
   
   // 정답 텍스트
-  textFont(font2, 42);
+  textFont(font2, 48);
   fill(51, 63, 80);
-  text("Apple", width / 2 - 70, height / 2 + 20);
+  text(stage.text[stage.answer - 1], width / 2, height / 2 + 20);
   
   textFont(font1, 36);
-  text("다음 스테이지로", width / 2 - 130, height / 2 + 250);
+  text("다음 스테이지로", width / 2, height / 2 + 250);
   
   fill(51, 63, 80, text_opacity);
   textFont(font1, 26);
-  text("스페이스 바를 눌러주세요", width / 2 - 150, height / 2 + 300);
+  text("스페이스 바를 눌러주세요", width / 2, height / 2 + 300);
   
   // 텍스트 투명도 조정
   text_opacity += opacity_var;
@@ -237,9 +248,9 @@ void Answer() {
 void gameOver() {  
   textFont(font2, 72);
   fill(51, 63, 80);
-  text("Game Over", width / 2 - 190, height / 2 - 240);
+  text("Game Over", width / 2, height / 2 - 240);
   textFont(font1, 32);
-  text("시간이 지났어요ㅠㅠ", width / 2 - 125, height / 2 - 180);
+  text("시간이 지났어요ㅠㅠ", width / 2, height / 2 - 180);
   
   // 애니메이션 출력
   if (i >= 0 && i < 10) {
@@ -272,11 +283,11 @@ void gameOver() {
   } 
   
   textFont(font1, 36);
-  text("다시 도전해 볼까요?", width / 2 - 160, height / 2 + 250);
+  text("다시 도전해 볼까요?", width / 2, height / 2 + 250);
   
   fill(51, 63, 80, text_opacity);
   textFont(font1, 26);
-  text("스페이스 바를 눌러주세요", width / 2 - 150, height / 2 + 300);
+  text("스페이스 바를 눌러주세요", width / 2, height / 2 + 300);
 
   // 텍스트 투명도 조정
   text_opacity += opacity_var;
@@ -287,6 +298,7 @@ void gameOver() {
   if (keyPressed) {
     if (key == ' ') { // 스페이스 바가 눌렸다면
       // 시간을 초기화하고, 첫 번째 퀴즈로 돌아간다
+      cur_stage = 1;
       reset_time = millis() / 1000;
     }
   }
