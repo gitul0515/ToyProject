@@ -32,6 +32,7 @@ int wrong_status = 0; // 오답 판정
 
 // 애니메이션
 int i = 0;
+PImage[] img_answer = new PImage[35]; // 정답 애니메이션
 PImage[] img_gameover = new PImage[9]; // 게임 오버 애니메이션
 
 void setup() {
@@ -52,16 +53,15 @@ void setup() {
   String[] text_2 = { "Monday", "Holiday", "Birthday" };
   stage[2] = new Stage("\"휴일\"을 영어로 뭐라고 할까요?", text_2, 2);
 
+
+  // 정답 애니메이션
+  for (int i = 0; i < img_answer.length; i++) {
+    img_answer[i] = loadImage("stars-" + i + ".png");
+  }
   // 게임 오버 애니메이션
-  img_gameover[0] = loadImage("gameover_1-0.png");
-  img_gameover[1] = loadImage("gameover_1-1.png");
-  img_gameover[2] = loadImage("gameover_1-2.png");
-  img_gameover[3] = loadImage("gameover_1-3.png");
-  img_gameover[4] = loadImage("gameover_1-4.png");
-  img_gameover[5] = loadImage("gameover_1-5.png");
-  img_gameover[6] = loadImage("gameover_1-6.png");
-  img_gameover[7] = loadImage("gameover_1-7.png");
-  img_gameover[8] = loadImage("gameover_1-8.png");
+  for (int i = 0; i < img_gameover.length; i++) {
+    img_gameover[i] = loadImage("gameover-" + i + ".png");
+  }
 }
 
 void draw() {
@@ -69,7 +69,7 @@ void draw() {
   background(242, 242, 242);
 
   // 시간(time)은 1초 단위로 차감된다.
-  int time = 5 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
+  int time = 30 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
   
   // 시간(30초)가 지나지 않은 경우
   if (time > 0) {
@@ -168,13 +168,15 @@ void quiz(int time, Stage stage) {
     opacity_var *= -1;
   }
   
-  // ============= 정답 및 오답 처리  =============
+  // ============= 정답 및 오답 처리 =============
   // 정답이 1인 경우
   if (stage.answer == 1 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     if (mouseX >= 205 && mouseX <= 475) { // 정답 처리
       answer_status = true;
-    } else if (mouseX >= 555 && mouseX <= 825) { // 오답 처리
+    } else if (mouseX >= 555 && mouseX <= 825) { // 오답 처리: 2
       wrong_status = 2;
+    } else if (mouseX >= 905 && mouseX <= 1175) { // 오답 처리: 3
+      wrong_status = 3;
     }
   }
   
@@ -183,7 +185,11 @@ void quiz(int time, Stage stage) {
     // 정답 처리
     if (mouseX >= 555 && mouseX <= 825) {
       answer_status = true;
-    } 
+    } else if (mouseX >= 205 && mouseX <= 475) { // 오답 처리: 1
+      wrong_status = 1;
+    } else if (mouseX >= 905 && mouseX <= 1175) { // 오답 처리: 3
+      wrong_status = 3;
+    }
   }
   
   // 정답이 3인 경우
@@ -191,22 +197,25 @@ void quiz(int time, Stage stage) {
     // 정답 처리
     if (mouseX >= 905 && mouseX <= 1175) {
       answer_status = true;
-    } 
+    } else if (mouseX >= 205 && mouseX <= 475) { // 오답 처리: 1
+      wrong_status = 1;
+    } else if (mouseX >= 555 && mouseX <= 825) { // 오답 처리: 2
+      wrong_status = 2;
+    }
   }
   
-  if (wrong_status == 1) {
-  
+  if (boolean(wrong_status)) { // wrong_status가 0이면 실행x, 1 2 3이면 실행o
+    Wrong(wrong_status);  
   }
 }
 
-// 정답 화면을 출력하는 함수
+// 정답 화면
 void Answer(Stage stage) {
-  reset_time = 100; // 시간을 멈춘다
+  reset_time = 1000000; // 시간을 멈춘다
   
   textFont(font2, 62);
   fill(51, 63, 80);
   text("정답입니다!", width / 2, height / 2 - 220);
-  
   
   // 정답 도형
   if (stage.answer == 1) stroke(255, 0, 0); // 빨간색
@@ -218,9 +227,15 @@ void Answer(Stage stage) {
   ellipse(width / 2, height / 2 + 10, 320, 320);
   
   // 정답 텍스트
-  textFont(font2, 48);
+  textFont(font2, 56);
   fill(51, 63, 80);
   text(stage.text[stage.answer - 1], width / 2, height / 2 + 20);
+  
+  // 정답 애니메이션
+  image(img_answer[i / 10], width - 425, 70, img_answer[i / 10].width, img_answer[i / 10].height);
+  image(img_answer[i / 10], 90, 70, img_answer[i / 10].width, img_answer[i / 10].height);
+  i++;
+  if (i >= img_answer.length * 10) i = 0;
   
   textFont(font1, 36);
   text("다음 스테이지로", width / 2, height / 2 + 250);
@@ -239,8 +254,26 @@ void Answer(Stage stage) {
     if (key == ' ') { // 스페이스 바를 누르면 다음 스테이지로 이동한다
       cur_stage++; // 스테이지 1 증가
       answer_status = false;
+      wrong_status = 0;
       reset_time = millis() / 1000; // 시간 초기화
     }
+  }
+}
+
+// 오답을 X선으로 표시한다
+void Wrong(int wrong_status) {
+  strokeWeight(10);
+  stroke(51, 63, 80, 150);
+  
+  if (wrong_status == 1) {
+    line(257, 354, 427, 525);
+    line(427, 354, 257, 525);
+  } else if (wrong_status == 2) {
+    line(597, 354, 767, 525);
+    line(767, 354, 597, 525);
+  } else if (wrong_status == 3) {
+    line(940, 354, 1110, 525);
+    line(1110, 354, 940, 525);
   }
 }
 
@@ -253,35 +286,10 @@ void gameOver() {
   text("시간이 지났어요ㅠㅠ", width / 2, height / 2 - 180);
   
   // 애니메이션 출력
-  if (i >= 0 && i < 10) {
-    image(img_gameover[i / 10],  width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 10 && i < 20) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 20 && i < 30) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 30 && i < 40) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 40 && i < 50) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 50 && i < 60) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 60 && i < 70) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else if (i >= 70 && i < 80) {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i++;
-  } else {
-    image(img_gameover[i / 10], width / 2 - 180, height / 2 - 170, 380, 380);
-    i = 0;
-  } 
-  
+  image(img_gameover[i / 10],  width / 2 - 180, height / 2 - 170, 380, 380);
+  i++;
+  if (i >= img_gameover.length * 10) i = 0;
+
   textFont(font1, 36);
   text("다시 도전해 볼까요?", width / 2, height / 2 + 250);
   
