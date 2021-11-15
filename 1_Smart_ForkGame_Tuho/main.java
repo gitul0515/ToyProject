@@ -31,9 +31,14 @@ boolean answer_status = false; // 정답 판정
 int wrong_status = 0; // 오답 판정
 
 // 애니메이션
-int i = 0;
-PImage[] img_answer = new PImage[35]; // 정답 애니메이션
-PImage[] img_gameover = new PImage[9]; // 게임 오버 애니메이션
+PImage[] img_stars = new PImage[20]; // 별 뿌리기 애니메이션
+int stars_idx = 0;
+PImage[] img_answer_1 = new PImage[16]; // 정답 애니메이션1
+int answer_idx = 0;
+PImage[] img_gameClear = new PImage[16]; // 게임 클리어 애니메이션
+int gameClear_idx = 0;
+PImage[] img_gameOver = new PImage[9]; // 게임 오버 애니메이션
+int gameOver_idx = 0;
 
 void setup() {
   // 화면 크기 (모니터 해상도)
@@ -55,12 +60,23 @@ void setup() {
 
 
   // 정답 애니메이션
-  for (int i = 0; i < img_answer.length; i++) {
-    img_answer[i] = loadImage("stars-" + i + ".png");
+  for (int i = 0; i < img_stars.length; i++) {
+    img_stars[i] = loadImage("stars-" + i + ".png");
   }
+  
+  // 정답1 애니메이션
+  for (int i = 0; i < img_answer_1.length; i++) {
+    img_answer_1[i] = loadImage("answer-1-" + i + ".png");
+  }
+  
+  // 게임 클리어 애니메이션
+  for (int i = 0; i < img_gameClear.length; i++) {
+    img_gameClear[i] = loadImage("gameClear-" + i + ".png");
+  }
+  
   // 게임 오버 애니메이션
-  for (int i = 0; i < img_gameover.length; i++) {
-    img_gameover[i] = loadImage("gameover-" + i + ".png");
+  for (int i = 0; i < img_gameOver.length; i++) {
+    img_gameOver[i] = loadImage("gameover-" + i + ".png");
   }
 }
 
@@ -69,7 +85,7 @@ void draw() {
   background(242, 242, 242);
 
   // 시간(time)은 1초 단위로 차감된다.
-  int time = 30 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
+  int time = 5 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
   
   // 시간(30초)가 지나지 않은 경우
   if (time > 0) {
@@ -96,7 +112,7 @@ void draw() {
     
     // 게임 클리어
     if (cur_stage > 3) {
-      
+      gameClear();
     }
   } else { // 시간(30초)가 지났다면, 게임 오버 화면을 출력한다
     gameOver();
@@ -211,7 +227,7 @@ void quiz(int time, Stage stage) {
 
 // 정답 화면
 void Answer(Stage stage) {
-  reset_time = 1000000; // 시간을 멈춘다
+  reset_time = 10000000; // 시간을 멈춘다
   
   textFont(font2, 62);
   fill(51, 63, 80);
@@ -231,11 +247,17 @@ void Answer(Stage stage) {
   fill(51, 63, 80);
   text(stage.text[stage.answer - 1], width / 2, height / 2 + 20);
   
-  // 정답 애니메이션
-  image(img_answer[i / 10], width - 425, 70, img_answer[i / 10].width, img_answer[i / 10].height);
-  image(img_answer[i / 10], 90, 70, img_answer[i / 10].width, img_answer[i / 10].height);
-  i++;
-  if (i >= img_answer.length * 10) i = 0;
+  // 별 뿌리기 애니메이션
+  image(img_stars[stars_idx / 10], width - 425, 70);
+  image(img_stars[stars_idx / 10], 90, 70);
+  stars_idx++;
+  if (stars_idx >= img_stars.length * 10) stars_idx = 0;
+  
+  // 축하 애니메이션
+  image(img_answer_1[answer_idx / 10], width / 2 + 315, height / 2 + 40);
+  image(img_answer_1[answer_idx / 10], width / 2 - 545, height / 2 + 40);
+  answer_idx++;
+  if (answer_idx >= img_answer_1.length * 10) answer_idx = 0;
   
   textFont(font1, 36);
   text("다음 스테이지로", width / 2, height / 2 + 250);
@@ -277,7 +299,7 @@ void Wrong(int wrong_status) {
   }
 }
 
-// 게임오버 화면을 출력하는 함수
+// 게임오버 화면을 출력한다
 void gameOver() {  
   textFont(font2, 72);
   fill(51, 63, 80);
@@ -285,10 +307,10 @@ void gameOver() {
   textFont(font1, 32);
   text("시간이 지났어요ㅠㅠ", width / 2, height / 2 - 180);
   
-  // 애니메이션 출력
-  image(img_gameover[i / 10],  width / 2 - 180, height / 2 - 170, 380, 380);
-  i++;
-  if (i >= img_gameover.length * 10) i = 0;
+  // 게임 오버 애니메이션
+  image(img_gameOver[gameOver_idx / 10],  width / 2 - 180, height / 2 - 170, 380, 380);
+  gameOver_idx++;
+  if (gameOver_idx >= img_gameOver.length * 10) gameOver_idx = 0;
 
   textFont(font1, 36);
   text("다시 도전해 볼까요?", width / 2, height / 2 + 250);
@@ -303,11 +325,49 @@ void gameOver() {
     opacity_var *= -1;
   }
   
+  // 스페이스 바를 누른 경우
   if (keyPressed) {
-    if (key == ' ') { // 스페이스 바가 눌렸다면
-      // 시간을 초기화하고, 첫 번째 퀴즈로 돌아간다
+    if (key == ' ') {
+      // 변수들을 초기화하고, 첫 번째 퀴즈로 돌아간다
       cur_stage = 1;
-      reset_time = millis() / 1000;
+      answer_status = false;
+      wrong_status = 0;
+      reset_time = millis() / 1000; // 시간 초기화
     }
-  }
+  } 
+}
+
+// 게임 클리어 화면을 출력한다
+void gameClear() {
+  reset_time = 10000000; // 시간을 멈춘다
+  
+  textFont(font2, 72);
+  fill(51, 63, 80);
+  text("Game Clear", width / 2, height / 2 - 220);
+  textFont(font1, 32);
+  text("모든 문제를 다 맞혔어요!", width / 2, height / 2 - 160);
+  
+  // 별 뿌리기 애니메이션
+  image(img_stars[stars_idx / 10], width - 425, 70);
+  image(img_stars[stars_idx / 10], 90, 70);
+  stars_idx++;
+  if (stars_idx >= img_stars.length * 10) stars_idx = 0;
+  
+  // 게임 클리어 애니메이션
+  image(img_gameClear[gameClear_idx / 10],  width / 2 - 180, height / 2 - 130);
+  gameClear_idx++;
+  if (gameClear_idx >= img_gameClear.length * 10) gameClear_idx = 0;
+  
+  text("정말 축하합니다 :)", width / 2, height / 2 + 280);
+  
+  // 엔터 키를 누른 경우
+  if (keyPressed) {
+    if (key == ENTER) { // 엔터 키가 눌렸다면
+      // 변수들을 초기화하고, 첫 번째 퀴즈로 돌아간다
+      cur_stage = 1;
+      answer_status = false;
+      wrong_status = 0;
+      reset_time = millis() / 1000; // 시간 초기화
+    }
+  } 
 }
