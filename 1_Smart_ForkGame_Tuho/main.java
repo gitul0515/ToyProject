@@ -31,14 +31,20 @@ boolean answer_status = false; // 정답 판정
 int wrong_status = 0; // 오답 판정
 
 // 애니메이션
+PImage[] img_time = new PImage[16]; // 시간 애니메이션
+int time_idx = 0;
 PImage[] img_stars = new PImage[20]; // 별 뿌리기 애니메이션
 int stars_idx = 0;
-PImage[] img_answer_1 = new PImage[16]; // 정답 애니메이션1
+PImage[] img_answer_1 = new PImage[16]; // 정답 애니메이션
 int answer_idx = 0;
 PImage[] img_gameClear = new PImage[16]; // 게임 클리어 애니메이션
 int gameClear_idx = 0;
 PImage[] img_gameOver = new PImage[9]; // 게임 오버 애니메이션
 int gameOver_idx = 0;
+
+// 공
+int ball_diam = 330; // 공의 지름
+boolean ball_effect = false; // 공 던지기 효과 (false: off, true: on)
 
 void setup() {
   // 화면 크기 (모니터 해상도)
@@ -58,8 +64,12 @@ void setup() {
   String[] text_2 = { "Monday", "Holiday", "Birthday" };
   stage[2] = new Stage("\"휴일\"을 영어로 뭐라고 할까요?", text_2, 2);
 
+  // 시간 애니메이션
+  for (int i = 0; i < img_time.length; i++) {
+    img_time[i] = loadImage("time-" + i + ".png");
+  }
 
-  // 정답 애니메이션
+  // 별 뿌리기 애니메이션
   for (int i = 0; i < img_stars.length; i++) {
     img_stars[i] = loadImage("stars-" + i + ".png");
   }
@@ -85,9 +95,9 @@ void draw() {
   background(242, 242, 242);
 
   // 시간(time)은 1초 단위로 차감된다.
-  int time = 5 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
+  int time = 15 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
   
-  // 시간(30초)가 지나지 않은 경우
+  // 시간(15초)가 지나지 않은 경우
   if (time > 0) {
     // 첫 번째 스테이지
     if (cur_stage == 1) {
@@ -114,7 +124,7 @@ void draw() {
     if (cur_stage > 3) {
       gameClear();
     }
-  } else { // 시간(30초)가 지났다면, 게임 오버 화면을 출력한다
+  } else { // 시간(15초)가 지났다면, 게임 오버 화면을 출력한다
     gameOver();
   }
 }
@@ -163,11 +173,9 @@ void quiz(int time, Stage stage) {
   fill(51, 63, 80);
   text(stage.text[2], 1026, 450);
   
-  // 남은 시간 표시
-  textFont(font1, 30);
-  text("남은 시간", 80, 50);
-  textFont(font2, 30);
-  text(time, 170, 50);
+  // 시간 애니메이션
+  time_idx = time;
+  image(img_time[15 - time_idx], 0, 0, img_time[0].width * 0.7, img_time[0].height * 0.7);
   
   // 레벨 표시
   textFont(font1, 30);
@@ -183,12 +191,12 @@ void quiz(int time, Stage stage) {
   if (text_opacity < 32 || text_opacity > 455) {
     opacity_var *= -1;
   }
-  
+    
   // ============= 정답 및 오답 처리 =============
   // 정답이 1인 경우
   if (stage.answer == 1 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     if (mouseX >= 205 && mouseX <= 475) { // 정답 처리
-      answer_status = true;
+      ball_effect = true; // 공 던지기 효과
     } else if (mouseX >= 555 && mouseX <= 825) { // 오답 처리: 2
       wrong_status = 2;
     } else if (mouseX >= 905 && mouseX <= 1175) { // 오답 처리: 3
@@ -200,7 +208,7 @@ void quiz(int time, Stage stage) {
   if (stage.answer == 2 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     // 정답 처리
     if (mouseX >= 555 && mouseX <= 825) {
-      answer_status = true;
+      ball_effect = true; // 공 던지기 효과
     } else if (mouseX >= 205 && mouseX <= 475) { // 오답 처리: 1
       wrong_status = 1;
     } else if (mouseX >= 905 && mouseX <= 1175) { // 오답 처리: 3
@@ -212,7 +220,7 @@ void quiz(int time, Stage stage) {
   if (stage.answer == 3 && mousePressed && mouseY >= 305 && mouseY <= 575) {
     // 정답 처리
     if (mouseX >= 905 && mouseX <= 1175) {
-      answer_status = true;
+      ball_effect = true; // 공 던지기 효과
     } else if (mouseX >= 205 && mouseX <= 475) { // 오답 처리: 1
       wrong_status = 1;
     } else if (mouseX >= 555 && mouseX <= 825) { // 오답 처리: 2
@@ -220,14 +228,42 @@ void quiz(int time, Stage stage) {
     }
   }
   
+  if (ball_effect) {
+    ball(stage); // 공 던지기 함수
+  }
+  
   if (boolean(wrong_status)) { // wrong_status가 0이면 실행x, 1 2 3이면 실행o
     Wrong(wrong_status);  
   }
 }
 
+// 정답 선택 시 공 던지기 효과
+void ball(Stage stage) {
+  noStroke();
+  fill(255, 212, 0);
+
+  if (stage.answer == 1) {
+    ellipse(340, 440, ball_diam, ball_diam);
+  } else if (stage.answer == 2) {
+    ellipse(width / 2, 440, ball_diam, ball_diam);
+  } else if (stage.answer == 3){
+    ellipse(1026, 440, ball_diam, ball_diam);
+  }
+  ball_diam -= 10;
+  delay(10);
+  
+  // 공의 크기가 작아지면 정답 화면으로 넘어간다
+  if (ball_diam <= 70) {
+    answer_status = true;
+    // 공 초기화
+    ball_diam = 330; 
+    ball_effect = false;
+  }
+}
+
 // 정답 화면
 void Answer(Stage stage) {
-  reset_time = 10000000; // 시간을 멈춘다
+  reset_time = millis() / 1000; // 시간을 멈춘다
   
   textFont(font2, 62);
   fill(51, 63, 80);
@@ -339,7 +375,7 @@ void gameOver() {
 
 // 게임 클리어 화면을 출력한다
 void gameClear() {
-  reset_time = 10000000; // 시간을 멈춘다
+  reset_time = millis() / 1000; // 시간을 멈춘다
   
   textFont(font2, 72);
   fill(51, 63, 80);
