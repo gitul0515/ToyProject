@@ -1,3 +1,7 @@
+// 사운드
+import ddf.minim.*;
+Minim minim;
+
 // 폰트
 PFont font1;
 PFont font2;
@@ -46,6 +50,15 @@ int gameOver_idx = 0;
 // 공
 int ball_diam = 330; // 공의 지름
 
+//사운드 
+AudioPlayer sound01;
+AudioPlayer sound02;
+AudioPlayer sound03;
+AudioPlayer sound04;
+//AudioPlayer sound05;
+//AudioPlayer sound06;
+//AudioPlayer sound07;
+
 void setup() {
   // 화면 크기 (모니터 해상도)
   size(1366, 768);
@@ -88,6 +101,18 @@ void setup() {
   for (int i = 0; i < img_gameOver.length; i++) {
     img_gameOver[i] = loadImage("gameover-" + i + ".png");
   }
+  
+  // 사운드
+  minim = new Minim(this);
+  sound01 = minim.loadFile("BGM.wav"); 
+  sound02 = minim.loadFile("BGM_OVER.wav");
+  sound03 = minim.loadFile("wrong.wav");
+  sound04 = minim.loadFile("correct.wav");
+  //sound05 = minim.loadFile("apple.mp3");
+  //sound06 = minim.loadFile("school.mp3");
+  //sound07 = minim.loadFile("holiday.mp3");
+
+  sound01.loop(); // BGM 재생
 }
 
 void draw() {
@@ -232,8 +257,11 @@ void judgeAnswer(Stage stage) {
   // 공의 지름이 90 미만으로 작아지면 답을 판정한다
   if (ball_diam < 90) {
     if (ring_number == stage.answer) { // 정답인 경우
+      sound04.rewind();
       answer_status = true; // 정답 화면으로 넘어간다
+      delay(10);
     } else { // 오답인 경우: 오답 표시
+      sound03.rewind();
       if (ring_number == 1) wrong_number = 1;
       else if (ring_number == 2) wrong_number = 2;
       else if (ring_number == 3) wrong_number = 3;
@@ -246,6 +274,9 @@ void judgeAnswer(Stage stage) {
 
 // 정답 화면
 void answerScreen(Stage stage) {
+  // 사운드
+  sound04.play();
+  
   reset_time = millis() / 1000; // 시간을 멈춘다
   
   textFont(font2, 62);
@@ -303,6 +334,7 @@ void answerScreen(Stage stage) {
 
 // 오답을 X선으로 표시한다
 void wrongAnswer(int wrong_number) {
+  sound03.play();
   strokeWeight(10);
   stroke(51, 63, 80, 150);
   
@@ -319,7 +351,10 @@ void wrongAnswer(int wrong_number) {
 }
 
 // 게임오버 화면을 출력한다
-void gameOver() {  
+void gameOver() {
+  sound01.pause();
+  sound02.play();
+  
   textFont(font2, 72);
   fill(51, 63, 80);
   text("Game Over", width / 2, height / 2 - 240);
@@ -352,6 +387,14 @@ void gameOver() {
       answer_status = false;
       wrong_number = 0;
       reset_time = millis() / 1000; // 시간 초기화
+      
+      sound01.rewind();
+      sound01.loop();
+      sound02.pause();
+      sound02.rewind();  
+      //sound05.rewind();
+      //sound06.rewind();
+      //sound07.rewind();
     }
   } 
 }
@@ -387,6 +430,10 @@ void gameClear() {
       answer_status = false;
       wrong_number = 0;
       reset_time = millis() / 1000; // 시간 초기화
+      
+      //sound05.rewind();
+      //sound06.rewind();
+      //sound07.rewind();
     }
   } 
 }
