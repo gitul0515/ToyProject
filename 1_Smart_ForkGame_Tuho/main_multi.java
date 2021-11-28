@@ -17,7 +17,7 @@ int reset_time = 0;
 Stage[] stage = new Stage[7]; // 스테이지는 총 7개
 class Stage {
   String question; // 문제 텍스트
-  String text[] = new String[3]; // 보기 텍스트
+  String text[] = new String[4]; // 보기 텍스트
   int answer; // 정답
 
   // 생성자 함수
@@ -44,8 +44,6 @@ PImage[] img_lose = new PImage[12]; // 패배 애니메이션
 int lose_idx = 0;
 PImage[] img_stars = new PImage[20]; // 별 뿌리기 애니메이션
 int stars_idx = 0;
-PImage[] img_storm = new PImage[13]; // 천둥 애니메이션
-int storm_idx = 0;
 PImage[] img_gameClear = new PImage[16]; // 게임 클리어 애니메이션
 int gameClear_idx = 0;
 PImage[] img_gameOver = new PImage[9]; // 게임 오버 애니메이션
@@ -87,25 +85,25 @@ void setup() {
   font2 = createFont("맑은 고딕 Bold", 24);
   
   // 스테이지
-  String[] text_0 = { "Apple", "Banana", "Melon" };
+  String[] text_0 = { "Apple", "Banana", "Melon", "사과" };
   stage[0] = new Stage("\"사과\"를 영어로 뭐라고 할까요?", text_0, 1);
   
-  String[] text_1 = { "Swim", "Sport", "School" };
+  String[] text_1 = { "Swim", "Sport", "School", "학교" };
   stage[1] = new Stage("\"학교\"를 영어로 뭐라고 할까요?", text_1, 3);
   
-  String[] text_2 = { "Monkey", "Elephant", "Lion" };
+  String[] text_2 = { "Monkey", "Elephant", "Lion", "코끼리" };
   stage[2] = new Stage("\"코끼리\"를 영어로 뭐라고 할까요?", text_2, 2);
   
-  String[] text_3 = { "Friend", "Teacher", "Parent" };
+  String[] text_3 = { "Friend", "Teacher", "Parent", "부모님" };
   stage[3] = new Stage("\"부모님\"을 영어로 뭐라고 할까요?", text_3, 3);
   
-  String[] text_4 = { "Monday", "Holiday", "Birthday" };
+  String[] text_4 = { "Monday", "Holiday", "Birthday", "휴일" };
   stage[4] = new Stage("\"휴일\"을 영어로 뭐라고 할까요?", text_4, 2);
   
-  String[] text_5 = { "Fall", "Spring", "Winter" };
+  String[] text_5 = { "Fall", "Spring", "Winter", "가을" };
   stage[5] = new Stage("\"가을\"을 영어로 뭐라고 할까요?", text_5, 1);
   
-  String[] text_6 = { "Morning", "Evening", "Afternoon" };
+  String[] text_6 = { "Morning", "Evening", "Afternoon", "오후" };
   stage[6] = new Stage("\"오후\"를 영어로 뭐라고 할까요?", text_6, 3);
 
   // 시간 애니메이션
@@ -126,11 +124,6 @@ void setup() {
   // 별 뿌리기 애니메이션
   for (int i = 0; i < img_stars.length; i++) {
     img_stars[i] = loadImage("stars-" + i + ".png");
-  }
-  
-  // 천둥 애니메이션
-  for (int i = 0; i < img_storm.length; i++) {
-    img_storm[i] = loadImage("storm-" + i + ".png");
   }
   
   // 게임 클리어 애니메이션
@@ -158,7 +151,7 @@ void setup() {
 
 void draw() {
   // 배경색 (옅은 회색)
-  background(242, 242, 242);
+  background(255, 255, 255);
 
   // 시간은 1초 단위로 차감된다.
   int time = 15 - (millis() / 1000 - reset_time); // reset_time은 시간 초기화용 변수
@@ -191,7 +184,7 @@ void quizScreen(int time, Stage stage) {
   // 빨간색 원 도형
   stroke(0, 191, 255);
   strokeWeight(8);
-  fill(242, 242, 242);
+  fill(255, 255, 255);
   ellipse(340, 440, 270, 270);
   
   // 빨간색 원 텍스트
@@ -202,7 +195,7 @@ void quizScreen(int time, Stage stage) {
   // 초록색 원 도형
   stroke(255, 136, 73);
   strokeWeight(8);
-  fill(242, 242, 242);
+  fill(255, 255, 255);
   ellipse(width / 2, 440, 270, 270);
   
   // 초록색 원 텍스트
@@ -213,7 +206,7 @@ void quizScreen(int time, Stage stage) {
   // 파란색 원 도형
   stroke(105, 190, 40);
   strokeWeight(8);
-  fill(242, 242, 242);
+  fill(255, 255, 255);
   ellipse(1026, 440, 270, 270);
   
   // 파란색 원 텍스트
@@ -227,7 +220,7 @@ void quizScreen(int time, Stage stage) {
   
   // 레벨 표시
   textFont(font1, 30);
-  text("스테이지 " + cur_stage + "/ 3", width - 110, 50);
+  text("스테이지 " + cur_stage + "/ 7", width - 110, 50);
   
   // 하위 서브 텍스트
   textFont(font1, 34);
@@ -373,13 +366,15 @@ void answerScreen(Stage stage) {
   else stroke(105, 190, 40); // 파란색
 
   strokeWeight(8);
-  fill(242, 242, 242);
+  fill(255, 255, 255);
   ellipse(width / 2, height / 2 + 20, 320, 320);
   
   // 정답 텍스트
   textFont(font2, 56);
   fill(51, 63, 80);
   text(stage.text[stage.answer - 1], width / 2, height / 2 + 35);
+  textFont(font1, 32);
+  text(stage.text[3], width / 2, height / 2 + 85);
   
   textFont(font1, 36);
   text("다음 스테이지로", width / 2, height / 2 + 250);
@@ -400,6 +395,8 @@ void answerScreen(Stage stage) {
       answer_status = false;
       wrong_number = 0;
       reset_time = millis() / 1000; // 시간 초기화
+
+      who = 1;
     }
   }
 }
@@ -475,25 +472,39 @@ void gameOver() {
 void gameClear() {
   reset_time = millis() / 1000; // 시간을 멈춘다
   
-  textFont(font2, 72);
+  textFont(font2, 62);
   fill(51, 63, 80);
-  text("Game Clear", width / 2, height / 2 - 220);
+  text("최종 스코어", width / 2, height / 2 - 170);
+  textFont(font2, 100);
+  text(":", width / 2, height / 2 - 30);
+
+  textFont(font2, 160);
+  fill(244, 17, 95);
+  text(player1_score, width / 2 - 110, height / 2);
+  fill(46, 117, 200);
+  text(player2_score, width / 2 + 110, height / 2);
+
+  textFont(font2, 52);
+  fill(51, 63, 80);
+  if (player1_score > player2_score) text("첫 번째 학생이", width / 2, height / 2 + 120);
+  else text("두 번째 학생이", width / 2, height / 2 + 120);
+  text("우승했어요!", width / 2, height / 2 + 195);
   textFont(font1, 32);
-  text("모든 문제를 다 맞혔어요!", width / 2, height / 2 - 160);
+  fill(51, 63, 80, text_opacity);
+  text("정말 축하합니다 :)", width / 2, height / 2 + 270);
+  
+  // 텍스트 투명도 조정
+  text_opacity += opacity_var;
+  if (text_opacity < 32 || text_opacity > 455) {
+    opacity_var *= -1;
+  }
   
   // 별 뿌리기 애니메이션
   image(img_stars[stars_idx / 10], width - 425, 70);
   image(img_stars[stars_idx / 10], 90, 70);
   stars_idx++;
   if (stars_idx >= img_stars.length * 10) stars_idx = 0;
-  
-  // 게임 클리어 애니메이션
-  image(img_gameClear[gameClear_idx / 10],  width / 2 - 180, height / 2 - 130);
-  gameClear_idx++;
-  if (gameClear_idx >= img_gameClear.length * 10) gameClear_idx = 0;
-  
-  text("정말 축하합니다 :)", width / 2, height / 2 + 280);
-  
+      
   // 엔터 키를 누른 경우
   if (keyPressed) {
     if (key == ENTER) { // 엔터 키가 눌렸다면
@@ -503,6 +514,7 @@ void gameClear() {
       wrong_number = 0;
       reset_time = millis() / 1000; // 시간 초기화
       
+      who = 1;
       player1_score = 0;
       player2_score = 0;
     }
