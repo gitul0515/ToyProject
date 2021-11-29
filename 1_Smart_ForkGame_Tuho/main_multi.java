@@ -1,3 +1,16 @@
+// 시리얼 통신
+//import processing.serial.*;
+//Serial myPort;
+//int p;
+int button_num = 0; // 몇 번째 버튼을 눌렀는가 (예: 1, 2, 3)
+int who = 1; // 누가 눌렀는가 (예: 1, 2)
+
+// 플레이어
+int player1 = 1;
+int player1_score = 0;
+int player2 = 2;
+int player2_score = 0;
+
 // 사운드
 import ddf.minim.*;
 Minim minim;
@@ -6,9 +19,16 @@ Minim minim;
 PFont font1;
 PFont font2;
 
+// 이미지
+PImage hand1;
+PImage hand2;
+
 // 텍스트 투명도 조정
 int text_opacity = 255;
 int opacity_var = -7;
+
+// 텍스트 사이즈 조정
+int text_size = 42;
 
 // 시간 초기화
 int reset_time = 0;
@@ -61,16 +81,6 @@ AudioPlayer sound04;
 //AudioPlayer sound06;
 //AudioPlayer sound07;
 
-// 아두이노에서 입력받을 변수
-int button_number = 0; // 몇 번째 버튼을 눌렀는가 (1, 2, 3)
-int who = 1; // 누가 눌렀는가 (1, 2)
-
-// 플레이어
-int player1 = 1;
-int player1_score = 0;
-int player2 = 2;
-int player2_score = 0;
-
 //class Player {
 //  int score;
 //  int ball_color;
@@ -80,10 +90,18 @@ void setup() {
   // 화면 크기 (모니터 해상도)
   size(1366, 768);
   
+  // 시리얼 통신
+  //myPort = new Serial(this, "COM3", 9600);
+  //myPort.bufferUntil(10);
+  
   // 폰트
   font1 = createFont("맑은 고딕", 24);
   font2 = createFont("맑은 고딕 Bold", 24);
   
+  // 이미지
+  hand1 = loadImage("hand1.png");
+  hand2 = loadImage("hand2.png");
+
   // 스테이지
   String[] text_0 = { "Apple", "Banana", "Melon", "사과" };
   stage[0] = new Stage("\"사과\"를 영어로 뭐라고 할까요?", text_0, 1);
@@ -184,34 +202,34 @@ void quizScreen(int time, Stage stage) {
   // 빨간색 원 도형
   stroke(0, 191, 255);
   strokeWeight(8);
-  fill(255, 255, 255);
+  fill(0, 191, 255, 30);
   ellipse(340, 440, 270, 270);
   
   // 빨간색 원 텍스트
   textFont(font2, 42);
   fill(51, 63, 80);
-  text(stage.text[0], 340, 450);
-  
+  text(stage.text[0], 400, 450);
+
   // 초록색 원 도형
   stroke(255, 136, 73);
   strokeWeight(8);
-  fill(255, 255, 255);
+  fill(255, 136, 73, 40);
   ellipse(width / 2, 440, 270, 270);
   
   // 초록색 원 텍스트
-  textFont(font2, 42);
+  textFont(font2, 52);
   fill(51, 63, 80);
   text(stage.text[1], width / 2, 450);
   
   // 파란색 원 도형
   stroke(105, 190, 40);
   strokeWeight(8);
-  fill(255, 255, 255);
+  fill(0, 255, 0, 40);
   ellipse(1026, 440, 270, 270);
   
   // 파란색 원 텍스트
   textFont(font2, 42);
-  fill(51, 63, 80);
+  fill(51, 63, 70);
   text(stage.text[2], 1026, 450);
   
   // 시간 애니메이션
@@ -236,20 +254,23 @@ void quizScreen(int time, Stage stage) {
   // 버튼을 클릭한 경우
   if (mousePressed && mouseY >= 305 && mouseY <= 575) {
     if (mouseX >= 205 && mouseX <= 475) { 
-      button_number = 1; // 1번 버튼을 클릭
+      button_num = 1; // 1번 버튼을 클릭
     } else if (mouseX >= 555 && mouseX <= 825) {
-      button_number = 2; // 2번 버튼을 클릭
+      button_num = 2; // 2번 버튼을 클릭
     } else if (mouseX >= 905 && mouseX <= 1175) {
-      button_number = 3; // 3번 버튼을 클릭
+      button_num = 3; // 3번 버튼을 클릭
     }
   }
+  
+  //image(hand1, width / 2 - 350, height / 2, 250, 250);
+  //image(hand2, width / 2 + 350, height / 2, 250, 250);
   
   // if (button == 1) button_number = 1;
   // else if (button == 2) button_number = 2;
   // else if (button == 3) button_number = 3;
   
   // 답을 판정한다
-  if (boolean(button_number)) { // button_number 0이면 실행하지 않음. 1, 2, 3이면 실행함
+  if (boolean(button_num)) { // button_number 0이면 실행하지 않음. 1, 2, 3이면 실행함
     judgeAnswer(stage);
   }
   
@@ -267,11 +288,11 @@ void judgeAnswer(Stage stage) {
   if (who == player1) fill(244, 17, 95);
   else if (who == player2) fill(46, 117, 200);
   
-  if (button_number == 1) {
+  if (button_num == 1) {
     ellipse(340, 440, ball_diam, ball_diam);
-  } else if (button_number == 2) {
+  } else if (button_num == 2) {
     ellipse(width / 2, 440, ball_diam, ball_diam);
-  } else if (button_number == 3){
+  } else if (button_num == 3){
     ellipse(1026, 440, ball_diam, ball_diam);
   }
   ball_diam -= 10; // 공의 크기가 점점 작아진다
@@ -279,7 +300,7 @@ void judgeAnswer(Stage stage) {
   
   // 공의 지름이 90 미만으로 작아지면 답을 판정한다
   if (ball_diam < 90) {
-    if (button_number == stage.answer) { // 정답인 경우
+    if (button_num == stage.answer) { // 정답인 경우
       // 정답을 맞춘 플레이어의 점수 1 증가
       if (who == player1) player1_score++;
       else if (who == player2) player2_score++;
@@ -289,15 +310,15 @@ void judgeAnswer(Stage stage) {
       delay(10);
   } else { // 오답인 경우: 오답 표시
       sound03.rewind();
-      if (button_number == 1) wrong_number = 1;
-      else if (button_number == 2) wrong_number = 2;
-      else if (button_number == 3) wrong_number = 3;
+      if (button_num == 1) wrong_number = 1;
+      else if (button_num == 2) wrong_number = 2;
+      else if (button_num == 3) wrong_number = 3;
       
       // who = 1;
     }
     // 변수 초기화
     ball_diam = 330;
-    button_number = 0;
+    button_num = 0;
   }
 }
 
@@ -530,3 +551,27 @@ void keyPressed() {
     } 
   }
 }
+
+//void serialEvent(Serial myPort) {
+//  String s = myPort.readString();
+//  s = s.trim();
+//  p = int(s);
+//  myPort.clear();
+  
+//  if (p == 1) {
+//    who = 1; button_num = 1;
+//  } else if (p == 2) {
+//    who = 1; button_num = 2;
+//  } else if (p == 3) {
+//    who = 1; button_num = 3;
+//  } else if (p == 4) {
+//    who = 2; button_num = 1;
+//  } else if (p == 5) {
+//    who = 2; button_num = 2;
+//  } else if (p == 6) {
+//    who = 2; button_num = 3;
+//  }
+
+//  println(button_num);
+//  println(who);
+//}
